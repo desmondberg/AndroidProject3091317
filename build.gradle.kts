@@ -46,7 +46,7 @@ dependencies {
     //for nav graphs and such
     implementation("androidx.navigation:navigation-compose:2.9.5")
     implementation("org.osmdroid:osmdroid-android:6.1.20")
-
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

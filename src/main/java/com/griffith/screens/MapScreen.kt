@@ -11,6 +11,7 @@ import com.griffith.components.OpenStreetViewMap
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun MapScreen(){
     Scaffold(
@@ -20,4 +21,16 @@ fun MapScreen(){
             OpenStreetViewMap()
         }
     }
+}
+
+//The journey tracker pops up from the bottom when the user starts a journey. The tracker consists of a stopwatch,
+//information about distance travelled so far, current speed and average speed (either in km/h or mph depending on user settings)
+@Composable
+fun JourneyTracker(){
+
+}
+
+@Composable
+fun JourneyStopwatch(){
+
 }
