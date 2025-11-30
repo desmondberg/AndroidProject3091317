@@ -99,33 +99,37 @@ fun JournalScreen() {
                 var description by remember { mutableStateOf("") }
                 var journeyType by remember { mutableStateOf("") }
 
-                BasicAlertDialog(onDismissRequest = { showForm = false }, modifier=Modifier.padding(16.dp)) {
+                BasicAlertDialog(onDismissRequest = { showForm = false }, modifier=Modifier.padding(8.dp)) {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(8.dp)
                     ) {
-                        Column(modifier = Modifier.padding(8.dp)) {
+                        Column(modifier = Modifier.padding(24.dp)) {
                             Text("New Journal", style = MaterialTheme.typography.titleLarge)
+                            Spacer(modifier = Modifier.height(24.dp))
                             TextField(
                                 label = { Text("Journal Title") },
                                 value = title,
                                 onValueChange = { title = it },
                                 singleLine = true
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
                             TextField(
                                 label = { Text("Description") },
                                 value = description,
                                 onValueChange = { description = it },
                                 singleLine = true
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
                             TextField(
                                 label = { Text("Journey Type") },
                                 value = journeyType,
                                 onValueChange = { journeyType = it },
                                 singleLine = true
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
