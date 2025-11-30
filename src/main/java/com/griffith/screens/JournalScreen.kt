@@ -41,13 +41,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.griffith.models.JournalItem
+import com.griffith.viewmodels.JournalViewModel
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun JournalScreen() {
+fun JournalScreen(journalViewModel: JournalViewModel) {
     var showForm by remember { mutableStateOf(false) }
-    val journalEntries = remember { mutableStateListOf<JournalItem>() }
+    val journalEntries = journalViewModel.journalItems
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("My Journal") }) }
@@ -72,11 +74,29 @@ fun JournalScreen() {
                             .padding(vertical = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
+                            //title, description and journey type
                             Text(entry.title, style = MaterialTheme.typography.titleMedium)
                             Row {
                                 Text(entry.description, fontStyle = FontStyle.Italic)
                                 Spacer(Modifier.width(8.dp))
                                 Text(entry.journeyType, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            //time info
+                            if(entry.startTime != 0L && entry.endTime !=0L){
+                                Column {
+                                    Text("Start: ${entry.dateFormat.format(Date(entry.startTime))}")
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("End: ${entry.dateFormat.format(Date(entry.endTime))}")
+                                }
+                            }
+                            //position info
+                            if(entry.startPosition !=null && entry.endPosition!=null){
+                                Column {
+                                    Text("Began at: (${"%.2f".format(entry.startPosition.latitude)}, ${"%.2f".format(entry.startPosition.longitude)})")
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Ended at: (${"%.2f".format(entry.endPosition.latitude)}, ${"%.2f".format(entry.endPosition.longitude)})")
+                                }
                             }
                         }
                     }
@@ -94,11 +114,13 @@ fun JournalScreen() {
                 Text("Add Entry", fontSize = 20.sp)
             }
 
+            //appears when the add entry button is clicked
             if (showForm) {
                 var title by remember { mutableStateOf("") }
                 var description by remember { mutableStateOf("") }
                 var journeyType by remember { mutableStateOf("") }
 
+                //a modal dialog that appears over the main screen
                 BasicAlertDialog(onDismissRequest = { showForm = false }, modifier=Modifier.padding(8.dp)) {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
@@ -140,7 +162,7 @@ fun JournalScreen() {
                                     Text("Cancel")
                                 }
                                 Button(onClick = {
-                                    journalEntries.add(JournalItem(title, description, journeyType))
+                                    journalViewModel.addEntry(JournalItem(title=title, description=description, journeyType = journeyType))
                                     showForm = false
                                 }) {
                                     Text("Add")

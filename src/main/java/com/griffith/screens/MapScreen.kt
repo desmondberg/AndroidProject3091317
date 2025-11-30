@@ -22,6 +22,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.griffith.components.OpenStreetViewMap
+import com.griffith.viewmodels.GPSLocationViewModel
+import com.griffith.viewmodels.JournalViewModel
 import com.griffith.viewmodels.SettingsViewModel
 import com.griffith.viewmodels.StopwatchViewModel
 
@@ -29,7 +31,7 @@ import com.griffith.viewmodels.StopwatchViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
-fun MapScreen(stopwatchViewModel: StopwatchViewModel,settingsViewModel: SettingsViewModel) {
+fun MapScreen(stopwatchViewModel: StopwatchViewModel,settingsViewModel: SettingsViewModel,journalViewModel: JournalViewModel,locationViewModel: GPSLocationViewModel) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Map") }) },
     ) { paddingValues ->
@@ -41,7 +43,8 @@ fun MapScreen(stopwatchViewModel: StopwatchViewModel,settingsViewModel: Settings
         ) {
 
             OpenStreetViewMap(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                locationViewModel = locationViewModel
             )
             JourneyTracker(
                 modifier = Modifier
@@ -54,7 +57,10 @@ fun MapScreen(stopwatchViewModel: StopwatchViewModel,settingsViewModel: Settings
                     )
                     .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
                 stopwatchViewModel = stopwatchViewModel,
-                settingsViewModel = settingsViewModel
+                settingsViewModel = settingsViewModel,
+                journalViewModel = journalViewModel,
+                locationViewModel = locationViewModel
+
             )
         }
     }

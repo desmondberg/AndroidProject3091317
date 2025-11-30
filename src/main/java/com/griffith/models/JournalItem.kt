@@ -1,11 +1,17 @@
 package com.griffith.models
 
+import org.osmdroid.util.GeoPoint
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Locale
+import java.util.UUID
 
 //a journal entry
 data class JournalItem(
-    val title: String,
+    //generate random id
+    val id: String = UUID.randomUUID().toString(),
 
+    val title: String,
     val description: String,
 
     //Run, walk, cycle, etc
@@ -17,7 +23,10 @@ data class JournalItem(
     val startTime: Long = 0L,
     val endTime: Long = 0L,
 
-    //start and positions are stored using a custom data class - Coordinate (latitude, longitude)
-    val startPosition: Coordinate? = null,
-    val endPosition: Coordinate? = null
+    //start and positions are stored using GeoPoints (latitude, longitude)
+    val startPosition: GeoPoint? = null,
+    val endPosition: GeoPoint? = null,
+
+    //date format
+    val dateFormat: SimpleDateFormat = SimpleDateFormat("MMM dd, yyyy, HH:mm", Locale.getDefault())
 )

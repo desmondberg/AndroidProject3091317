@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.griffith.viewmodels.GPSLocationViewModel
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -38,13 +39,13 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 @SuppressLint("MissingPermission")
 
 @Composable
-fun OpenStreetViewMap(modifier: Modifier = Modifier) {
+fun OpenStreetViewMap(modifier: Modifier = Modifier, locationViewModel: GPSLocationViewModel) {
     val context = LocalContext.current
 
     //these objects should only be created the first time this component is loaded
 
     //user's current coordinates
-    var currentLocation by remember { mutableStateOf<GeoPoint?>(null) }
+    val currentLocation = locationViewModel.currentLocation
     //google play location client
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
@@ -62,8 +63,9 @@ fun OpenStreetViewMap(modifier: Modifier = Modifier) {
         object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 val location = result.lastLocation
+                //if there is a location, set the value of the current location (in view model) to it
                 if(location != null){
-                    currentLocation = GeoPoint(location.latitude, location.longitude)
+                    currentLocation.value = GeoPoint(location.latitude, location.longitude)
                 }
             }
         }
@@ -94,7 +96,7 @@ fun OpenStreetViewMap(modifier: Modifier = Modifier) {
         },
         //when current location updates, update the position of the marker on the map
         update = { mapView ->
-            currentLocation?.let { location ->
+            currentLocation.value?.let { location ->
                 //center the map on user's current position
                 mapView.controller.setCenter(location)
                 //clear all old markers to prevent duplicates

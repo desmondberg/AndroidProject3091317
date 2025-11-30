@@ -1,3 +1,4 @@
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -9,12 +10,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.griffith.components.linearAccelerationSensor
 import com.griffith.models.JournalItem
+import com.griffith.viewmodels.GPSLocationViewModel
+import com.griffith.viewmodels.JournalViewModel
 import com.griffith.viewmodels.SettingsViewModel
 import com.griffith.viewmodels.StopwatchViewModel
 import kotlin.math.pow
@@ -27,8 +31,12 @@ fun JourneyTracker(
     modifier: Modifier = Modifier,
     //view models
     stopwatchViewModel: StopwatchViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    journalViewModel: JournalViewModel,
+    locationViewModel: GPSLocationViewModel
 ) {
+    //get context for toast
+    val context = LocalContext.current
 
     //elapsed time in seconds
     val elapsedTime by remember {
@@ -59,9 +67,15 @@ fun JourneyTracker(
                     description = "Description here",
                     journeyType = "Journey",
                     startTime = stopwatchViewModel.startMillis,
-                    endTime = stopwatchViewModel.stopMillis
+                    endTime = stopwatchViewModel.stopMillis,
+                    //for now, both start and end positions are the same
+                    startPosition = locationViewModel.startLocation.value,
+                    endPosition = locationViewModel.endLocation.value
                 )
-                //TODO - store this in a database
+                //add new entry to journal view model
+                journalViewModel.addEntry(newJournalEntry)
+                //display toast
+                Toast.makeText(context, "Journal entry added", Toast.LENGTH_SHORT).show()
 
             }
         }
@@ -69,9 +83,9 @@ fun JourneyTracker(
 
     Column(
         modifier = modifier
-            //white background, rounded corners
+            //rounded corners
             .background(
-                Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
             .padding(16.dp),
@@ -101,8 +115,10 @@ fun JourneyTracker(
                         //do nothing
                     }else{
                         if(stopwatchViewModel.isRunning){
+                            locationViewModel.endLocation.value = locationViewModel.currentLocation.value
                             stopwatchViewModel.stop()
                         }else {
+                            locationViewModel.startLocation.value = locationViewModel.currentLocation.value
                             stopwatchViewModel.start()
                         }
                     }

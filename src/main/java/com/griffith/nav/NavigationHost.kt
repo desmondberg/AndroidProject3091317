@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import com.griffith.screens.JournalScreen
 import com.griffith.screens.MapScreen
 import com.griffith.screens.SettingsScreen
+import com.griffith.viewmodels.GPSLocationViewModel
+import com.griffith.viewmodels.JournalViewModel
 import com.griffith.viewmodels.SettingsViewModel
 import com.griffith.viewmodels.StopwatchViewModel
 
@@ -24,6 +26,8 @@ fun NavigationHost(
     //single instances of view models
     val settingsViewModel: SettingsViewModel = viewModel()
     val stopwatchViewModel: StopwatchViewModel = viewModel()
+    val journalViewModel: JournalViewModel = viewModel()
+    val locationViewModel: GPSLocationViewModel = viewModel()
 
     NavHost(
         navController = controller,
@@ -32,10 +36,10 @@ fun NavigationHost(
         exitTransition = { ExitTransition.None }
     ) {
         composable("map") {
-            MapScreen(stopwatchViewModel = stopwatchViewModel, settingsViewModel = settingsViewModel)
+            MapScreen(stopwatchViewModel = stopwatchViewModel, settingsViewModel = settingsViewModel, journalViewModel=journalViewModel, locationViewModel = locationViewModel)
         }
         composable("journal") {
-            JournalScreen()
+            JournalScreen(journalViewModel = journalViewModel)
         }
         composable("settings") {
             SettingsScreen(
