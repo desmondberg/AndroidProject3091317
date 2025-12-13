@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "460284981698",
+    "firebase_url": "https://journeytracker-6a1a5-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "journeytracker-6a1a5",
+    "storage_bucket": "journeytracker-6a1a5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460284981698:android:df9fffa581d2299de1e65b",
+        "android_client_info": {
+          "package_name": "com.griffith"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIS_rqAGknAxzLG0_0NRezdB-U4IFuqkE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

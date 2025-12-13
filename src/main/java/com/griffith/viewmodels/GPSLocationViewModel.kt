@@ -1,5 +1,6 @@
 package com.griffith.viewmodels
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import org.osmdroid.util.GeoPoint
@@ -10,4 +11,11 @@ class GPSLocationViewModel : ViewModel() {
     var currentLocation = mutableStateOf<GeoPoint?>(null)
     var startLocation = mutableStateOf<GeoPoint?>(null)
     var endLocation = mutableStateOf<GeoPoint?>(null)
+
+    //path-drawing
+    val pathPoints = mutableStateListOf<GeoPoint>()
+
+    fun addPathPoint(point: GeoPoint) {
+        pathPoints.add(point)
+    }
 }

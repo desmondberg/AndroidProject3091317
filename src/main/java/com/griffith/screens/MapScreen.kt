@@ -44,7 +44,8 @@ fun MapScreen(stopwatchViewModel: StopwatchViewModel,settingsViewModel: Settings
 
             OpenStreetViewMap(
                 modifier = Modifier.fillMaxSize(),
-                locationViewModel = locationViewModel
+                locationViewModel = locationViewModel,
+                stopwatchViewModel = stopwatchViewModel
             )
             JourneyTracker(
                 modifier = Modifier
