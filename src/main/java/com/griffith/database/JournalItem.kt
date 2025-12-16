@@ -23,17 +23,23 @@ data class JournalItemEntity(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
 
+    //text info
     val title: String,
     val description: String,
     val journeyType: String,
 
+    //duration
     val startTime: Long,
     val endTime: Long,
 
+    //locations
     val startGeoPointLat: Double?,
     val startGeoPointLng: Double?,
     val endGeoPointLat: Double?,
-    val endGeoPointLng: Double?
+    val endGeoPointLng: Double?,
+
+    //travelled distance
+    val distanceTravelled: Float?
 )
 
 
@@ -61,7 +67,7 @@ interface JournalItemDao {
 //database
 @Database(
     entities = [JournalItemEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class JournalItemDatabase : RoomDatabase() {
@@ -80,7 +86,7 @@ abstract class JournalItemDatabase : RoomDatabase() {
                     JournalItemDatabase::class.java,
                     //name of the database file
                     "journal_item.db"
-                ).build().also {
+                ).fallbackToDestructiveMigration().build().also {
                     //assign this database as the instance
                     db = it
                 }

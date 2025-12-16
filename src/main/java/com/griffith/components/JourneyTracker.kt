@@ -1,7 +1,4 @@
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,20 +6,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.griffith.components.linearAccelerationSensor
 import com.griffith.database.JournalItemEntity
-import com.griffith.models.JournalItem
 import com.griffith.viewmodels.GPSLocationViewModel
 import com.griffith.viewmodels.JournalViewModel
 import com.griffith.viewmodels.SettingsViewModel
 import com.griffith.viewmodels.StopwatchViewModel
-import kotlin.math.pow
 import kotlin.math.sqrt
 
 
@@ -43,6 +34,9 @@ fun JourneyTracker(
     //elapsed time in seconds
     val elapsedTime by remember {
         derivedStateOf { stopwatchViewModel.elapsedTimeInMilliseconds / 1000 }
+    }
+    val distance by remember {
+        derivedStateOf { locationViewModel.calculateTotalDistanceMeters() }
     }
 
     //get the raw linear acceleration data from the sensor (three axes)
@@ -74,6 +68,7 @@ fun JourneyTracker(
                     startGeoPointLng = locationViewModel.startLocation.value?.longitude,
                     endGeoPointLat = locationViewModel.endLocation.value?.latitude,
                     endGeoPointLng = locationViewModel.endLocation.value?.longitude,
+                    distanceTravelled = locationViewModel.calculateTotalDistanceMeters()
                 )
                 //add new entry to journal view model
                 journalViewModel.addEntry(newJournalEntry)
@@ -105,7 +100,7 @@ fun JourneyTracker(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Row {
-                Text("Distance travelled: ${"N/A" /*if(settingsViewModel.isImperial) distance*0.621 else distance*/} $kilometresOrMiles")
+                Text("Distance travelled: $distance $kilometresOrMiles")
             }
         }
         Spacer(modifier = Modifier.height(8.dp))

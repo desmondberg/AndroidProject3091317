@@ -16,23 +16,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,22 +44,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.griffith.database.JournalItemEntity
-import com.griffith.models.JournalItem
 import com.griffith.viewmodels.JournalViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
+
 @Composable
 fun JournalScreen(journalViewModel: JournalViewModel) {
     var showForm by remember { mutableStateOf(false) }
@@ -79,52 +73,7 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 items(journalEntries) { entry ->
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        tonalElevation = 8.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(8.dp)) {
-                            Text(entry.title, style = MaterialTheme.typography.titleMedium)
-
-                            Row {
-                                Text(entry.description, fontStyle = FontStyle.Italic)
-                                Spacer(Modifier.width(8.dp))
-                                Text(entry.journeyType, fontWeight = FontWeight.Bold)
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            if (entry.startGeoPointLat != null && entry.startGeoPointLng != null &&
-                                entry.endGeoPointLat != null && entry.endGeoPointLng != null) {
-                                Row {
-                                    Text("Started at: ")
-                                    AddressText(
-                                        lat = entry.startGeoPointLat,
-                                        lon = entry.startGeoPointLng,
-                                        viewModel = journalViewModel
-                                    )
-                                }
-                                Spacer(Modifier.height(8.dp))
-                                Text("Ended at: ")
-                                AddressText(
-                                    lat = entry.endGeoPointLat,
-                                    lon = entry.endGeoPointLng,
-                                    viewModel = journalViewModel
-                                )
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            if (entry.startTime > 0 && entry.endTime > 0) {
-                                Row {
-                                    Text("Duration: ${sdf.format(entry.endTime - entry.startTime)}")
-                                }
-                            }
-                        }
-                    }
+                    JournalEntryCard(entry, journalViewModel)
                 }
             }
 
@@ -195,7 +144,8 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                                         startGeoPointLat = null,
                                         startGeoPointLng = null,
                                         endGeoPointLat = null,
-                                        endGeoPointLng = null
+                                        endGeoPointLng = null,
+                                        distanceTravelled = 0f
                                     )
                                     journalViewModel.addEntry(newEntry)
                                     showForm = false
@@ -208,6 +158,153 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                 }
             }
         }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+//represents a journal entry on the journal screen
+fun JournalEntryCard(
+    entry: JournalItemEntity,
+    journalViewModel: JournalViewModel
+) {
+    //modal toggle variables
+    var showEditForm by remember { mutableStateOf(false) }
+    var showRemoveDialog by remember { mutableStateOf(false) }
+
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        tonalElevation = 8.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Box {
+            Column(modifier = Modifier.padding(8.dp)) {
+                //title
+                Text(entry.title, style = MaterialTheme.typography.titleMedium)
+                //description and journey type
+                Row {
+                    Text(entry.description, fontStyle = FontStyle.Italic)
+                    Spacer(Modifier.width(8.dp))
+                    Text(entry.journeyType, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                //location info
+                if (entry.startGeoPointLat != null && entry.startGeoPointLng != null &&
+                    entry.endGeoPointLat != null && entry.endGeoPointLng != null
+                ) {
+                    Row {
+                        Text("Started at: ")
+                        AddressText(
+                            lat = entry.startGeoPointLat,
+                            lon = entry.startGeoPointLng,
+                            viewModel = journalViewModel
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row {
+                        Text("Ended at: ")
+                        AddressText(
+                            lat = entry.endGeoPointLat,
+                            lon = entry.endGeoPointLng,
+                            viewModel = journalViewModel
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                //duration info
+                if (entry.startTime > 0 && entry.endTime > 0) {
+                    Row {
+                        Text("Duration: ${SimpleDateFormat("mm:ss", Locale.getDefault()).format(entry.endTime - entry.startTime)}")
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+                //distance info
+                entry.distanceTravelled?.let { distance ->
+                    val durationHours = (entry.endTime - entry.startTime)/ 3_600_000f
+
+                    if (distance > 0f && durationHours > 0f) {
+                        Row {
+                            Text("Distance travelled: %.2f metres".format(distance))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Row {
+                            Text("Average speed: %.1f km/h".format(distance / durationHours / 1000f))
+                        }
+                    }
+                }
+
+            }
+
+            //corner buttons
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+            ) {
+                //edit entry button
+                IconButton(onClick = { showEditForm = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit Entry"
+                    )
+                }
+                //remove entry button
+                IconButton(onClick = { showRemoveDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Remove Entry"
+                    )
+                }
+            }
+        }
+    }
+
+    //edit modal
+    if (showEditForm) {
+        BasicAlertDialog(onDismissRequest = { showEditForm = false }) {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Text("Edit Journal", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+        }
+    }
+
+        //remove modal
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Remove Entry") },
+            text = { Text("Are you sure you want to delete this journal entry?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRemoveDialog = false
+                    //remove entry from the database
+                    journalViewModel.removeEntry(entry)
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveDialog = false }) {
+                    Text("No")
+                }
+            }
+        )
     }
 }
 

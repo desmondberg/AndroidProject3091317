@@ -33,12 +33,23 @@ class JournalViewModel(application: Application) :
     val journalItems: Flow<List<JournalItemEntity>> =
         journalItem.getJournalItems()
 
+
+    //get a single entry by id
+    fun getEntry(id:String){
+        viewModelScope.launch{
+            journalItem.getJournalItemById(id);
+        }
+    }
+
+
+    //add a new entry
     fun addEntry(item: JournalItemEntity) {
         viewModelScope.launch {
             journalItem.insert(item)
         }
     }
 
+    //remove an entry
     fun removeEntry(item: JournalItemEntity) {
         viewModelScope.launch {
             journalItem.delete(item)
