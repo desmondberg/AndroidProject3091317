@@ -18,4 +18,5 @@ class GPSLocationViewModel : ViewModel() {
     fun addPathPoint(point: GeoPoint) {
         pathPoints.add(point)
     }
+
 }

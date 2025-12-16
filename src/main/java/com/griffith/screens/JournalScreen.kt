@@ -1,5 +1,6 @@
 package com.griffith.screens
 
+import AddressText
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,21 +42,32 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.griffith.database.JournalItemEntity
 import com.griffith.models.JournalItem
 import com.griffith.viewmodels.JournalViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun JournalScreen(journalViewModel: JournalViewModel) {
     var showForm by remember { mutableStateOf(false) }
-    val journalEntries = journalViewModel.journalItems
+    val sdf = SimpleDateFormat("mm:ss", Locale.getDefault())
+    val journalEntries by journalViewModel.journalItems.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("My Journal") }) }
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .padding(paddingValues)
@@ -74,28 +87,40 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                             .padding(vertical = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
-                            //title, description and journey type
                             Text(entry.title, style = MaterialTheme.typography.titleMedium)
+
                             Row {
                                 Text(entry.description, fontStyle = FontStyle.Italic)
                                 Spacer(Modifier.width(8.dp))
                                 Text(entry.journeyType, fontWeight = FontWeight.Bold)
                             }
+
                             Spacer(Modifier.height(8.dp))
-                            //time info
-                            if(entry.startTime != 0L && entry.endTime !=0L){
-                                Column {
-                                    Text("Start: ${entry.dateFormat.format(Date(entry.startTime))}")
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("End: ${entry.dateFormat.format(Date(entry.endTime))}")
+
+                            if (entry.startGeoPointLat != null && entry.startGeoPointLng != null &&
+                                entry.endGeoPointLat != null && entry.endGeoPointLng != null) {
+                                Row {
+                                    Text("Started at: ")
+                                    AddressText(
+                                        lat = entry.startGeoPointLat,
+                                        lon = entry.startGeoPointLng,
+                                        viewModel = journalViewModel
+                                    )
                                 }
+                                Spacer(Modifier.height(8.dp))
+                                Text("Ended at: ")
+                                AddressText(
+                                    lat = entry.endGeoPointLat,
+                                    lon = entry.endGeoPointLng,
+                                    viewModel = journalViewModel
+                                )
                             }
-                            //position info
-                            if(entry.startPosition !=null && entry.endPosition!=null){
-                                Column {
-                                    Text("Began at: (${"%.2f".format(entry.startPosition.latitude)}, ${"%.2f".format(entry.startPosition.longitude)})")
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Ended at: (${"%.2f".format(entry.endPosition.latitude)}, ${"%.2f".format(entry.endPosition.longitude)})")
+
+                            Spacer(Modifier.height(8.dp))
+
+                            if (entry.startTime > 0 && entry.endTime > 0) {
+                                Row {
+                                    Text("Duration: ${sdf.format(entry.endTime - entry.startTime)}")
                                 }
                             }
                         }
@@ -114,14 +139,12 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                 Text("Add Entry", fontSize = 20.sp)
             }
 
-            //appears when the add entry button is clicked
             if (showForm) {
                 var title by remember { mutableStateOf("") }
                 var description by remember { mutableStateOf("") }
                 var journeyType by remember { mutableStateOf("") }
 
-                //a modal dialog that appears over the main screen
-                BasicAlertDialog(onDismissRequest = { showForm = false }, modifier=Modifier.padding(8.dp)) {
+                BasicAlertDialog(onDismissRequest = { showForm = false }) {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
@@ -162,7 +185,19 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
                                     Text("Cancel")
                                 }
                                 Button(onClick = {
-                                    journalViewModel.addEntry(JournalItem(title=title, description=description, journeyType = journeyType))
+                                    //create a new journal item entity
+                                    val newEntry = JournalItemEntity(
+                                        title = title,
+                                        description = description,
+                                        journeyType = journeyType,
+                                        startTime = 0L,
+                                        endTime = 0L,
+                                        startGeoPointLat = null,
+                                        startGeoPointLng = null,
+                                        endGeoPointLat = null,
+                                        endGeoPointLng = null
+                                    )
+                                    journalViewModel.addEntry(newEntry)
                                     showForm = false
                                 }) {
                                     Text("Add")
@@ -175,3 +210,4 @@ fun JournalScreen(journalViewModel: JournalViewModel) {
         }
     }
 }
+

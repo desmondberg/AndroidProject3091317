@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.griffith.components.linearAccelerationSensor
+import com.griffith.database.JournalItemEntity
 import com.griffith.models.JournalItem
 import com.griffith.viewmodels.GPSLocationViewModel
 import com.griffith.viewmodels.JournalViewModel
@@ -23,6 +24,7 @@ import com.griffith.viewmodels.SettingsViewModel
 import com.griffith.viewmodels.StopwatchViewModel
 import kotlin.math.pow
 import kotlin.math.sqrt
+
 
 
 //this component serves as the info panel on the map screen that lets the user start the stopwatch, and displays their journey info
@@ -62,15 +64,16 @@ fun JourneyTracker(
     LaunchedEffect(Unit) {
         stopwatchViewModel.stopwatchFlow.collect { message ->
             if (message == "Stopwatch ended") {
-                val newJournalEntry = JournalItem(
+                val newJournalEntry = JournalItemEntity(
                     title = "New Journey",
                     description = "Description here",
                     journeyType = "Journey",
                     startTime = stopwatchViewModel.startMillis,
                     endTime = stopwatchViewModel.stopMillis,
-                    //for now, both start and end positions are the same
-                    startPosition = locationViewModel.startLocation.value,
-                    endPosition = locationViewModel.endLocation.value
+                    startGeoPointLat = locationViewModel.startLocation.value?.latitude,
+                    startGeoPointLng = locationViewModel.startLocation.value?.longitude,
+                    endGeoPointLat = locationViewModel.endLocation.value?.latitude,
+                    endGeoPointLng = locationViewModel.endLocation.value?.longitude,
                 )
                 //add new entry to journal view model
                 journalViewModel.addEntry(newJournalEntry)
